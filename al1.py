@@ -20,6 +20,7 @@ np.set_printoptions(threshold='nan')
 Alpha = 16
 Beta = 4
 P_COUNT = 80
+dim = 11089
 
 
 def tokenize(input_pos_dir_url_temp, input_neg_dir_url_temp, output_pos_file_url_temp, output_neg_file_url_temp):
@@ -289,7 +290,7 @@ def FileMatch(list_file_temp, doc_srcfile_temp):
 def algorithm1():
     RN_Data = []
     RN_Count = []
-    RN_VECTOR_DATA = np.zeros((1363,))
+    RN_VECTOR_DATA = np.zeros((dim,))
     ListFile = os.listdir("topic")
     for line in ListFile:
         RN_VECTOR_COUNT = 0
@@ -302,38 +303,37 @@ def algorithm1():
             Neg_Data_Temp = Neg_Data_Src.readline()
             RN_VECTOR_DATA += Neg_Vector_data
             RN_VECTOR_COUNT += 1
+            print len(RN_VECTOR_DATA)
+            print RN_VECTOR_COUNT
             # print (np.abs(RN_VECTOR_DATA))
         Neg_Data_Src.close()
         RN_Count.append(RN_VECTOR_COUNT)
         RN_Data.append(RN_VECTOR_DATA)
-        RN_VECTOR_DATA = np.zeros((1363,))
+
+        RN_VECTOR_DATA = np.zeros((dim,))
     Pos_Data_Src = open("finished_pos.dat", 'r')
     Pos_Data_Temp = Pos_Data_Src.readline()
-    P_VECTOR_DATA = np.zeros((1363,))
+    P_VECTOR_DATA = np.zeros((dim,))
     while Pos_Data_Temp != '':
         Pos_Vector_data_temp = np.fromstring(Pos_Data_Temp, sep=' ')
         Pos_Vector_data = Pos_Vector_data_temp / (np.sqrt(np.sum(Pos_Vector_data_temp*Pos_Vector_data_temp)))
         Pos_Data_Temp = Pos_Data_Src.readline()
         P_VECTOR_DATA += Pos_Vector_data
     Pos_Data_Src.close()
-    P_data_file = open("P_data.txt", 'a')
-    N_data_file = open("N_data.txt", 'a')
     P_value = []
     N_value = []
     for n in range(10):
         P_value_temp = ((Alpha * P_VECTOR_DATA) / P_COUNT) - ((Beta * RN_Data[n]) / RN_Count[n])
-        P_value.append(str(P_value_temp))
+        P_value.append(P_value_temp)
         N_value_temp = ((Alpha * RN_Data[n]) / RN_Count[n]) - ((Beta * P_VECTOR_DATA) / P_COUNT)
-        N_value.append(str(N_value_temp))
+        N_value.append(N_value_temp)
         # print N_value
         # P_data_file.write(str(P_value))
         # P_data_file.write("\n")
         # N_data_file.write(str(N_value))
         # N_data_file.write("\n")
-    P_data_file.writelines(P_value)
-    N_data_file.writelines(N_value)
-    P_data_file.close()
-    N_data_file.close()
+    np.save('P_data', P_value)
+    np.save('N_data', N_value)
 
 
 def dpmm():
@@ -346,10 +346,10 @@ def dpmm():
 def run():
     # Vector("doc/pos.txt","doc/neg.txt","finished_pos.dat","finished_neg.dat")
     # TopicUnion("model_theta.dat", "TopicUnion_neg.dat")
-    # FileMatch("TopicUnion_neg.dat", "finished_neg.dat")
+    FileMatch("TopicUnion_neg.dat", "finished_neg.dat")
     algorithm1()
 
 
 if __name__ == '__main__':
-    # run()
-    dpmm()
+    run()
+    # dpmm()
